@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A polished multi-step signup form with blur validation, draft preservation, accessible errors, and robust server revalidation.">
+  <title>Create Your Account — FlowCraft Cloud</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Accessible Live Region for Screen Readers -->
+  <div id="status-announcer" class="visually-hidden" role="status" aria-live="polite"></div>
+
+  <div class="app-container">
+    <!-- Header / Brand & Top Draft Bar -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">FlowCraft</span>
+          <span class="brand-tag">Cloud Studio</span>
+        </div>
+      </div>
+
+      <!-- Top Draft Auto-Save Indicator -->
+      <div class="draft-indicator-bar" id="draft-indicator-container">
+        <span class="draft-dot" aria-hidden="true"></span>
+        <span id="draft-status-text" class="draft-status-text">Draft auto-saved</span>
+        <button type="button" id="btn-clear-draft" class="btn-clear-draft" title="Clear saved draft and reset all fields">
+          Reset Draft
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Form Area -->
+    <main id="main-content" class="main-content">
+      <!-- Global Top Alert Banner (Server errors, network drops, conflicts) -->
+      <div id="global-alert" class="global-alert" role="alert" aria-live="assertive" hidden>
+        <div class="alert-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="alert-content">
+          <p id="global-alert-message" class="alert-message"></p>
+        </div>
+        <button type="button" id="btn-close-alert" class="btn-close-alert" aria-label="Dismiss alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form Card Container -->
+      <section class="form-card" id="form-card">
+        <!-- Multi-Step Progress Tracker -->
+        <nav class="step-navigation" aria-label="Signup Steps">
+          <ol class="step-tracker" role="list">
+            <li class="step-tracker-item" id="step-nav-1" data-step="1" aria-current="step">
+              <div class="step-circle">
+                <span class="step-number">1</span>
+                <svg class="step-check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <span class="step-label">Account</span>
+            </li>
+            <li class="step-divider" aria-hidden="true"></li>
+            <li class="step-tracker-item" id="step-nav-2" data-step="2">
+              <div class="step-circle">
+                <span class="step-number">2</span>
+                <svg class="step-check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <span class="step-label">Profile & Team</span>
+            </li>
+            <li class="step-divider" aria-hidden="true"></li>
+            <li class="step-tracker-item" id="step-nav-3" data-step="3">
+              <div class="step-circle">
+                <span class="step-number">3</span>
+                <svg class="step-check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <span class="step-label">Review & Terms</span>
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Form Wrapper -->
+        <form id="signup-form" novalidate autocomplete="on">
+          <!-- STEP 1: Account Essentials -->
+          <div class="form-step active" id="step-panel-1" role="region" aria-labelledby="step-1-heading">
+            <div class="step-header">
+              <h1 id="step-1-heading" class="step-title">Create your account</h1>
+              <p class="step-subtitle">Start building with FlowCraft. Let's begin with your login credentials.</p>
+            </div>
+
+            <!-- Full Name -->
+            <div class="form-group" id="group-fullName">
+              <div class="label-row">
+                <label for="fullName" class="field-label">Full Name <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <div class="input-wrapper">
+                <input 
+                  type="text" 
+                  id="fullName" 
+                  name="fullName" 
+                  class="form-input" 
+                  placeholder="e.g. Alex Morgan" 
+                  autocomplete="name" 
+                  spellcheck="false"
+                  required 
+                  minlength="2"
+                  maxlength="100"
+                  aria-required="true"
+                  aria-describedby="fullName-hint fullName-error"
+                >
+                <div class="field-status-icon" aria-hidden="true"></div>
+              </div>
+              <span id="fullName-hint" class="field-hint">Your first and last name for team collaboration.</span>
+              <div id="fullName-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <!-- Work Email -->
+            <div class="form-group" id="group-email">
+              <div class="label-row">
+                <label for="email" class="field-label">Work Email <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <div class="input-wrapper">
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  class="form-input" 
+                  placeholder="alex@company.com" 
+                  autocomplete="email" 
+                  spellcheck="false"
+                  required 
+                  aria-required="true"
+                  aria-describedby="email-hint email-error"
+                >
+                <div class="field-status-icon" aria-hidden="true"></div>
+              </div>
+              <span id="email-hint" class="field-hint">We'll send your workspace verification code here.</span>
+              <div id="email-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group" id="group-password">
+              <div class="label-row">
+                <label for="password" class="field-label">Password <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <div class="input-wrapper has-trailing-action">
+                <input 
+                  type="password" 
+                  id="password" 
+                  name="password" 
+                  class="form-input" 
+                  placeholder="At least 8 characters" 
+                  autocomplete="new-password" 
+                  required 
+                  aria-required="true"
+                  aria-describedby="password-checklist password-error"
+                >
+                <button 
+                  type="button" 
+                  id="toggle-password" 
+                  class="btn-icon-toggle" 
+                  aria-label="Show password in plain text" 
+                  aria-pressed="false"
+                  title="Toggle password visibility"
+                >
+                  <!-- Eye Icon (Show) -->
+                  <svg class="icon-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <!-- Eye Slash Icon (Hide) -->
+                  <svg class="icon-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Real-time Password Strength Meter -->
+              <div class="password-meter-wrap" id="password-meter-container" aria-hidden="true">
+                <div class="meter-bar-track">
+                  <div class="meter-bar-fill" id="meter-fill"></div>
+                </div>
+                <div class="meter-score-label" id="meter-label">Password Strength</div>
+              </div>
+
+              <!-- Dynamic Password Checklist -->
+              <ul class="password-checklist" id="password-checklist" aria-label="Password requirements">
+                <li id="rule-len" class="rule-item">
+                  <span class="rule-icon" aria-hidden="true">○</span> 8+ characters
+                </li>
+                <li id="rule-upper" class="rule-item">
+                  <span class="rule-icon" aria-hidden="true">○</span> 1 uppercase letter
+                </li>
+                <li id="rule-lower" class="rule-item">
+                  <span class="rule-icon" aria-hidden="true">○</span> 1 lowercase letter
+                </li>
+                <li id="rule-num" class="rule-item">
+                  <span class="rule-icon" aria-hidden="true">○</span> 1 number
+                </li>
+                <li id="rule-sym" class="rule-item">
+                  <span class="rule-icon" aria-hidden="true">○</span> 1 symbol (!@#$)
+                </li>
+              </ul>
+              <div id="password-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group" id="group-confirmPassword">
+              <div class="label-row">
+                <label for="confirmPassword" class="field-label">Confirm Password <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <div class="input-wrapper has-trailing-action">
+                <input 
+                  type="password" 
+                  id="confirmPassword" 
+                  name="confirmPassword" 
+                  class="form-input" 
+                  placeholder="Re-enter your password" 
+                  autocomplete="new-password" 
+                  required 
+                  aria-required="true"
+                  aria-describedby="confirmPassword-error"
+                >
+                <button 
+                  type="button" 
+                  id="toggle-confirm-password" 
+                  class="btn-icon-toggle" 
+                  aria-label="Show confirmation password in plain text" 
+                  aria-pressed="false"
+                  title="Toggle password visibility"
+                >
+                  <svg class="icon-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg class="icon-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+              <div id="confirmPassword-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Profile & Organization -->
+          <div class="form-step" id="step-panel-2" role="region" aria-labelledby="step-2-heading" hidden>
+            <div class="step-header">
+              <h2 id="step-2-heading" class="step-title">Profile & Team</h2>
+              <p class="step-subtitle">Tell us about your team so we can configure your workspace.</p>
+            </div>
+
+            <!-- Workspace Name -->
+            <div class="form-group" id="group-workspaceName">
+              <div class="label-row">
+                <label for="workspaceName" class="field-label">Workspace Name <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <div class="input-wrapper">
+                <input 
+                  type="text" 
+                  id="workspaceName" 
+                  name="workspaceName" 
+                  class="form-input" 
+                  placeholder="e.g. Acme Studio" 
+                  autocomplete="organization" 
+                  spellcheck="false"
+                  required 
+                  minlength="2"
+                  maxlength="60"
+                  aria-required="true"
+                  aria-describedby="workspaceName-hint workspaceName-error"
+                >
+                <div class="field-status-icon" aria-hidden="true"></div>
+              </div>
+              <span id="workspaceName-hint" class="field-hint">Your team URL will look like: flowcraft.app/workspaces/[name]</span>
+              <div id="workspaceName-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <!-- Primary Role Segmented Radio Grid -->
+            <fieldset class="form-group fieldset-roles" id="group-role" aria-describedby="role-error">
+              <legend class="field-label">Primary Role <span class="required" aria-hidden="true">*</span></legend>
+              <div class="role-grid" role="radiogroup" aria-required="true">
+                <label class="role-card" for="role-dev">
+                  <input type="radio" id="role-dev" name="role" value="developer" class="visually-hidden">
+                  <div class="role-card-inner">
+                    <span class="role-icon" aria-hidden="true">💻</span>
+                    <span class="role-title">Developer</span>
+                    <span class="role-desc">Engineering & APIs</span>
+                  </div>
+                </label>
+
+                <label class="role-card" for="role-product">
+                  <input type="radio" id="role-product" name="role" value="product" class="visually-hidden">
+                  <div class="role-card-inner">
+                    <span class="role-icon" aria-hidden="true">🎯</span>
+                    <span class="role-title">Product</span>
+                    <span class="role-desc">Roadmaps & Specs</span>
+                  </div>
+                </label>
+
+                <label class="role-card" for="role-designer">
+                  <input type="radio" id="role-designer" name="role" value="designer" class="visually-hidden">
+                  <div class="role-card-inner">
+                    <span class="role-icon" aria-hidden="true">🎨</span>
+                    <span class="role-title">Designer</span>
+                    <span class="role-desc">UI/UX & Design Systems</span>
+                  </div>
+                </label>
+
+                <label class="role-card" for="role-founder">
+                  <input type="radio" id="role-founder" name="role" value="founder" class="visually-hidden">
+                  <div class="role-card-inner">
+                    <span class="role-icon" aria-hidden="true">🚀</span>
+                    <span class="role-title">Founder</span>
+                    <span class="role-desc">Leadership & Strategy</span>
+                  </div>
+                </label>
+
+                <label class="role-card" for="role-student">
+                  <input type="radio" id="role-student" name="role" value="student" class="visually-hidden">
+                  <div class="role-card-inner">
+                    <span class="role-icon" aria-hidden="true">🎓</span>
+                    <span class="role-title">Student</span>
+                    <span class="role-desc">Learning & Projects</span>
+                  </div>
+                </label>
+
+                <label class="role-card" for="role-other">
+                  <input type="radio" id="role-other" name="role" value="other" class="visually-hidden">
+                  <div class="role-card-inner">
+                    <span class="role-icon" aria-hidden="true">✨</span>
+                    <span class="role-title">Other</span>
+                    <span class="role-desc">Marketing, Ops, etc.</span>
+                  </div>
+                </label>
+              </div>
+              <div id="role-error" class="field-error" role="alert" aria-live="polite"></div>
+            </fieldset>
+
+            <!-- Team Size -->
+            <div class="form-group" id="group-teamSize">
+              <div class="label-row">
+                <label for="teamSize" class="field-label">Team Size <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <div class="input-wrapper select-wrapper">
+                <select id="teamSize" name="teamSize" class="form-select" required aria-required="true" aria-describedby="teamSize-error">
+                  <option value="" disabled selected>Select approximate team size...</option>
+                  <option value="solo">Just me (Solo creator)</option>
+                  <option value="2-10">2 - 10 members (Small team)</option>
+                  <option value="11-50">11 - 50 members (Growing startup)</option>
+                  <option value="50+">50+ members (Enterprise)</option>
+                </select>
+                <div class="select-chevron" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div id="teamSize-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Review, Preferences & Terms -->
+          <div class="form-step" id="step-panel-3" role="region" aria-labelledby="step-3-heading" hidden>
+            <div class="step-header">
+              <h2 id="step-3-heading" class="step-title">Review & Finish</h2>
+              <p class="step-subtitle">Check your details and agree to terms to complete signup.</p>
+            </div>
+
+            <!-- Review Summary Card -->
+            <div class="review-card" id="review-summary-card">
+              <div class="review-header">
+                <span class="review-title">Account Summary</span>
+                <span class="review-sub">Review details or jump back to edit</span>
+              </div>
+              <div class="review-grid">
+                <div class="review-item">
+                  <span class="review-label">Full Name</span>
+                  <div class="review-val-row">
+                    <span class="review-value" id="rev-name">—</span>
+                    <button type="button" class="btn-jump-step" data-target-step="1" aria-label="Edit Name in Step 1">Edit</button>
+                  </div>
+                </div>
+                <div class="review-item">
+                  <span class="review-label">Work Email</span>
+                  <div class="review-val-row">
+                    <span class="review-value" id="rev-email">—</span>
+                    <button type="button" class="btn-jump-step" data-target-step="1" aria-label="Edit Email in Step 1">Edit</button>
+                  </div>
+                </div>
+                <div class="review-item">
+                  <span class="review-label">Workspace</span>
+                  <div class="review-val-row">
+                    <span class="review-value" id="rev-workspace">—</span>
+                    <button type="button" class="btn-jump-step" data-target-step="2" aria-label="Edit Workspace in Step 2">Edit</button>
+                  </div>
+                </div>
+                <div class="review-item">
+                  <span class="review-label">Role & Team</span>
+                  <div class="review-val-row">
+                    <span class="review-value" id="rev-role">—</span>
+                    <button type="button" class="btn-jump-step" data-target-step="2" aria-label="Edit Role in Step 2">Edit</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Optional Preferences -->
+            <fieldset class="form-group preferences-fieldset">
+              <legend class="field-label">Communication Preferences</legend>
+              <div class="checkbox-list">
+                <label class="custom-checkbox" for="notifyUpdates">
+                  <input type="checkbox" id="notifyUpdates" name="notifyUpdates" checked>
+                  <span class="checkbox-box" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </span>
+                  <span class="checkbox-label-text">Receive monthly changelog and new feature announcements</span>
+                </label>
+
+                <label class="custom-checkbox" for="notifySecurity">
+                  <input type="checkbox" id="notifySecurity" name="notifySecurity" checked>
+                  <span class="checkbox-box" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </span>
+                  <span class="checkbox-label-text">Important workspace security and compliance notices</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Mandatory Terms Checkbox -->
+            <div class="form-group" id="group-terms">
+              <label class="custom-checkbox terms-checkbox" for="terms">
+                <input 
+                  type="checkbox" 
+                  id="terms" 
+                  name="terms" 
+                  required 
+                  aria-required="true"
+                  aria-describedby="terms-error"
+                >
+                <span class="checkbox-box" aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span class="checkbox-label-text">
+                  I agree to the <a href="#terms-modal" class="link-inline" id="link-terms">Terms of Service</a> and <a href="#privacy-modal" class="link-inline" id="link-privacy">Privacy Policy</a>. <span class="required" aria-hidden="true">*</span>
+                </span>
+              </label>
+              <div id="terms-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Navigation Bar (Back, Next, Submit with in-flight spinner) -->
+          <div class="form-actions">
+            <button 
+              type="button" 
+              id="btn-back" 
+              class="btn btn-secondary" 
+              style="visibility: hidden;" 
+              enterkeyhint="previous"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Back</span>
+            </button>
+
+            <button 
+              type="button" 
+              id="btn-next" 
+              class="btn btn-primary" 
+              enterkeyhint="next"
+            >
+              <span>Continue</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+            <button 
+              type="submit" 
+              id="btn-submit" 
+              class="btn btn-primary btn-submit" 
+              hidden 
+              enterkeyhint="done"
+            >
+              <span class="btn-spinner" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                </svg>
+              </span>
+              <span class="btn-text">Create Account</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- FRIENDLY SUCCESS STATE (Shown after successful API response) -->
+      <section id="success-screen" class="success-screen" hidden tabindex="-1" aria-labelledby="success-heading">
+        <div class="success-card">
+          <!-- Animated Checkmark Badge -->
+          <div class="success-badge" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+
+          <h2 id="success-heading" class="success-title">Account Created Successfully!</h2>
+          <p class="success-subtitle" id="success-subtitle">Welcome aboard, <strong id="success-user-name">Friend</strong>! Your workspace is ready for action.</p>
+
+          <!-- Confirmed Details Summary -->
+          <div class="success-summary">
+            <div class="summary-header">
+              <span>Account Provisioning Details</span>
+              <span class="status-pill">Active</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Account ID:</span>
+              <code class="summary-code" id="success-user-id">usr_demo</code>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Registered Email:</span>
+              <span class="summary-value" id="success-user-email">email@example.com</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Workspace:</span>
+              <span class="summary-value" id="success-user-workspace">Acme Studios</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Role / Track:</span>
+              <span class="summary-value" id="success-user-role">Developer</span>
+            </div>
+          </div>
+
+          <div class="success-actions">
+            <button type="button" id="btn-demo-dashboard" class="btn btn-primary btn-full">
+              Explore Demo Dashboard
+            </button>
+            <button type="button" id="btn-create-another" class="btn btn-secondary btn-full">
+              Register Another Account
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p class="footer-note">
+        Built with strict accessible semantics, blur validation, defense-in-depth revalidation, and localStorage draft preservation.
+      </p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
